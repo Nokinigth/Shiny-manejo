@@ -30,7 +30,7 @@ ui <- dashboardPage(
       # === Pestaña 1: Contexto (Requerimiento 2) ===
       tabItem(
         tabName = "contexto",
-        h2("📖 Contexto del Problema y Preguntas"),
+        h2("Contexto del Problema y Preguntas"),
         
         fluidRow(
           box(
@@ -46,6 +46,20 @@ ui <- dashboardPage(
             solidHeader = TRUE, 
             width = 6,
             p("Aquí van las preguntas que se buscan responder con el análisis. [cite: 18]")
+          ),
+          box(
+           title = "Selección de base de datos",
+           status = "primary",
+           solidHeader = TRUE,
+           width = 12,
+           p("a")
+          ),
+          box(
+            title = "Lista de variables a utilizar",
+            status = "primary",
+            solidHeader = TRUE,
+            width = 12,
+            p("a")
           )
         )
       ),
