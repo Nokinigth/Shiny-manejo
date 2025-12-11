@@ -122,7 +122,7 @@ ui <- dashboardPage(
               style = "text-align: center;",
               img(
                 src = "recursos/T1S.png", 
-                style = "width: 350px; height: auto; display: block; margin: 0 auto;" 
+                style = "width: 450px; height: auto; display: block; margin: 0 auto;" 
               )
             ),
             br(),
@@ -131,7 +131,7 @@ ui <- dashboardPage(
               style = "text-align: center;",
               img(
                 src = "recursos/T2S.png", 
-                style = "width: 350px; height: auto; display: block; margin: 0 auto;" 
+                style = "width: 450px; height: auto; display: block; margin: 0 auto;" 
               )
             ),
             br(),
@@ -163,7 +163,7 @@ ui <- dashboardPage(
               style = "text-align: center;",
               img(
                 src = "recursos/bxas.png", 
-                style = "width: 450px; height: auto; display: block; margin: 0 auto;" 
+                style = "width: 500px; height: auto; display: block; margin: 0 auto;" 
               )
             ),
             withMathJax("Para comenzar con el análisis descriptivo, la Figura 1 muestra la distribución de los ingresos mediante diagramas de caja y bigotes (boxplots) ponderados separados por sexo y año. Al mirar los boxplots, nos percatamos que las cajas suben conforme pasan los años, esto indica que ha habido un aumento general en los ingresos desde \\( 2015 \\) a \\( 2022 \\)."),
@@ -180,7 +180,7 @@ ui <- dashboardPage(
               style = "text-align: center;",
               img(
                 src = "recursos/qp.png", 
-                style = "width: 450px; height: auto; display: block; margin: 0 auto;" 
+                style = "width: 500px; height: auto; display: block; margin: 0 auto;" 
               )
             ),
             withMathJax("El análisis de la dispersión de los datos usando quintiles (Figura 2) nos muestra varias cosas a destacar. Mucha gente puede pensar que porque la barra de las mujeres está mas arriba que la de los hombres es porque ganan más, pero esto no siempre es así. Los boxplots analizados anteriormente nos mostraron que los hombres ganan mas que las mujeres en todos los años, pero este gráfico de barras nos muestra que tan alejados están los sueldos del \\(20\\% \\) mas pobre del \\(20\\%\\) mas ricos."),
@@ -214,7 +214,7 @@ Antes de aplicar la prueba t, necesitábamos saber si las varianzas eran realmen
               style = "text-align: center;",
               img(
                 src = "recursos/bart.png", 
-                style = "width: 450px; height: auto; display: block; margin: 0 auto;" 
+                style = "width: 500px; height: auto; display: block; margin: 0 auto;" 
               )
             ),
             p("a"),
@@ -236,7 +236,7 @@ Antes de aplicar la prueba t, necesitábamos saber si las varianzas eran realmen
               style = "text-align: center;",
               img(
                 src = "recursos/T4S.png", 
-                style = "width: 450px; height: auto; display: block; margin: 0 auto;" 
+                style = "width: 500px; height: auto; display: block; margin: 0 auto;" 
               )
             ),
             br(),
@@ -488,6 +488,8 @@ server <- function(input, output, session) {
     }
   })
 }
+
+addResourcePath(prefix = 'recursos', directoryPath = 'www')
 
 # -----------------------------------------------------------------------------
 # 4. Ejecución de la Aplicación
