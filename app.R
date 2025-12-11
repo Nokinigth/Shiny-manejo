@@ -5,10 +5,13 @@ library(shiny)
 library(shinydashboard)
 library(dplyr)
 library(ggplot2)
-library(haven) # Para leer archivos .dta
-library(survey) # Necesario para el IC ponderado (aunque usaremos IC simple en ejemplo)
-
-
+library(haven) 
+library(survey)
+library(plotly)
+library(DT)
+library(googledrive)
+source("tabla variables.R")
+source("functions.R")
 # -----------------------------------------------------------------------------
 # 2. Definición de la Interfaz de Usuario (UI)
 # -----------------------------------------------------------------------------
