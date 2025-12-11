@@ -217,7 +217,6 @@ Antes de aplicar la prueba t, necesitábamos saber si las varianzas eran realmen
                 style = "width: 500px; height: auto; display: block; margin: 0 auto;" 
               )
             ),
-            p("a"),
             hr(),
             tags$div(
               style = "text-align: center;",
