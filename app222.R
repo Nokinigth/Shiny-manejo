@@ -12,29 +12,33 @@ library(DT)
 library(googledrive)
 source("tabla variables.R")
 # -----------------------------------------------------------------------------
-# 2. Definición de la Interfaz de Usuario (UI)
+#  Definición de la Interfaz de Usuario (UI)
 # -----------------------------------------------------------------------------
 ui <- dashboardPage(
   
-  # a) Cabecera
+  # Cabecera
   dashboardHeader(title = "Evaluación Final - Dashboard en Shiny"),
   
-  # b) Barra Lateral (Sidebar)
+  # Barra Lateral (Sidebar)
   dashboardSidebar(
     sidebarMenu(
       # Pestañas de navegación
       menuItem("Contexto y Datos", tabName = "contexto", icon = icon("info-circle")),
       menuItem("1. Estadística Descriptiva", tabName = "descriptivo", icon = icon("chart-bar")),
       menuItem("2. Inferencia Básica", tabName = "inferencia", icon = icon("calculator"))
-    )
-    # Aquí puedes añadir los 'selectInput', 'sliderInput', etc.
-  ),
+    ),
+  hr(),
+  # --- FILTRO GLOBAL POR AÑO ---
+  selectInput("filtro_anio", "Seleccione Año (CASEN):", 
+              choices = c("2015" = 2015, "2017" = 2017, "2022" = 2022),
+              selected = 2022)
+                        ),
   
-  # c) Cuerpo del Dashboard (Body)
+  #Cuerpo del Dashboard (Body)
   dashboardBody(
     tabItems(
       
-      # === Pestaña 1: Contexto (Requerimiento 2) ===
+      # === Pestaña 1: ===
       tabItem(
         tabName = "contexto",
         h2("Contexto del Problema y Preguntas"),
@@ -86,27 +90,30 @@ ui <- dashboardPage(
         )
       ),
       
-      # === Pestaña 2: Estadística Descriptiva (Requerimiento 3.a) ===
+      # === Pestaña 2: Estadística Descriptiva ===
       tabItem(
         tabName = "descriptivo",
         h2("📊 Análisis Descriptivo"),
         
         fluidRow(
+          # Cajas de resumen numérico
+          valueBoxOutput("media_ingreso"),
+          valueBoxOutput("total_casos"),
+          valueBoxOutput("promedio_edad")
+              ),
+        fluidRow(
+          # --- Caja Distribución de Ingresos ---
           box(
-            title = "Gráficos Exploratorios",
-            status = "warning",
-            width = 7,
-            # Aquí irá el 'plotOutput' de tus gráficos. [cite: 24]
-            p("Espacio para Gráficos. ¡Recuerda que deben ser interactivos!")
+            title = "Distribución de Ingresos", status = "primary", solidHeader = TRUE, width = 6,
+            plotOutput("plot_ingresos")
           ),
           box(
-            title = "Tablas de Resumen",
-            status = "warning",
-            width = 5,
-            # Aquí irá el 'tableOutput' o 'DT::dataTableOutput' de tus tablas. [cite: 23]
-            p("Espacio para Tablas.")
+            title = "Ingreso por Sexo", status = "primary", solidHeader = TRUE, width = 6,
+            p("Distribución comparativa (Zoom a ingresos < $2.000.000)"),
+            plotOutput("plot_boxplot")
           )
         ),
+        
         fluidRow(
           box(
             title = "Resultados", status = "success", width = 12,
@@ -187,7 +194,7 @@ ui <- dashboardPage(
         )
       ),
       
-      # === Pestaña 3: Inferencia Básica (Requerimiento 3.b) ===
+      # === Pestaña 3: Inferencia Básica ===
       tabItem(
         tabName = "inferencia",
         h2("Inferencia Básica"),
@@ -197,7 +204,9 @@ ui <- dashboardPage(
             title = "Justificación y Método",
             status = "danger",
             width = 12,
-            p("Justificación del método (Prueba de Hipótesis o Intervalo de Confianza). [cite: 27, 28]")
+            p("Para realizar un análisis de carácter inferencial, se graficaron los ingresos promedios a través de gráficos de barras con un intervalo de confianza del 95%, separados por sexo y año. Lo primero que se desprende de los gráficos, es que en todos los años analizados el ingreso promedio de los hombres mayor y además, los intervalos de confianza (IC) representados por los bigotes indican que los ingresos promedios poblacionales de los hombres nunca se han de superponer con los de las mujeres. Que los intervalos presenten esto es una evidencia visual de que la diferencia observada no es producto del azar, sino que es estadísticamente significativa. Por lo tanto, podemos inferir que, con un 95% de confianza, en la población general los hombres tienen mayores ingresos que las mujeres en los tres periodos. Sin embargo, visualmente, se infiere que esta brecha ha disminuido con el paso de los años, pero no desaparece.
+Antes de aplicar la prueba t, necesitábamos saber si las varianzas eran realmente desiguales, por lo que decidimos aplicar primero un test de Levene (Prueba F) para cada año, con el fin para estar completamente seguros de que estas eran distintas. Los resultados obtenidos confirman que las varianzas son en efecto, distintas, pues el valor p se ubicó entre 0,002 y 0,05 para el año 2015, entre 0,0001 y 0,05 para el año 2017 y entre aproximadamente 0 y 0,05 para el año 2022.
+")
           ),
           box(
             title = "Resultados", status = "success", width = 12,
@@ -240,6 +249,25 @@ ui <- dashboardPage(
             withMathJax("Aunque estos resultados muestren una brecha a favor de la parte masculina, se puede presenciar una clara disminución en los IC no solo para los valores que presentan estos intervalos, sino que también para la diferencia de medias conforme pasan los años. Por ejemplo, se hace un salto de \\( \\$90760 \\) a \\( \\$72947 \\) aproximadamente de \\( 2015 \\) a \\( 2022 \\) en las diferencias de medias respectivamente."),
           ),
         )
+      ),
+      tabItem(
+        tabName = "inferencia",
+        h2("Inferencia Básica"),
+        fluidRow(
+          box(
+            title = "Prueba de Hipótesis (T-Student)", width = 12, status = "warning",
+            helpText("Objetivo: Determinar si existe una diferencia significativa en el ingreso medio entre Hombres y Mujeres para el año seleccionado."),
+            verbatimTextOutput("resultado_ttest"),
+            h4("Interpretación:"),
+            textOutput("interpretacion_ttest")
+          )
+        ),
+        fluidRow(
+          box(
+            title = "Tabla de Datos Filtrada", width = 12,
+            DTOutput("tabla_completa")
+          )
+        )
       )
     )
   )
@@ -248,12 +276,219 @@ ui <- dashboardPage(
 # 3. Definición de la Lógica del Servidor (Server)
 # -----------------------------------------------------------------------------
 server <- function(input, output, session) {
+  
+  # Cargar datos reales
+  datos_crudos <- reactive({
+    req(file.exists("data1/datos_procesados.csv"))
+    read.csv("data1/datos_procesados.csv", stringsAsFactors = FALSE)
+  })
+  
+  # Convertir año a numérico si es necesario
+  datos_procesados <- reactive({
+    datos <- datos_crudos()
+    # Asegurar que 'año' sea numérico para el filtrado
+    if (!is.numeric(datos$año)) {
+      datos$año <- as.numeric(datos$año)
+    }
+    datos
+  })
+  
+  # Datos filtrados por año seleccionado
+  datos_filtrados <- reactive({
+    req(input$filtro_anio)
+    datos <- datos_procesados()
+    
+    # Filtrar por año seleccionado
+    datos_filt <- datos %>% 
+      filter(año == as.numeric(input$filtro_anio))
+    
+    # Eliminar outliers extremos para mejor visualización
+    # Usamos percentil 99 para limitar valores extremos
+    limite_superior <- quantile(datos_filt$yoprcor, 0.99, na.rm = TRUE)
+    
+    datos_filt %>% 
+      filter(yoprcor <= limite_superior & yoprcor > 0)
+  })
+  
+  # Renderizar tabla de códigos
   output$tabla_libro_codigos <- renderTable({
-    df_codigos
+    df_codigos  # Asumiendo que esto viene de "tabla variables.R"
+  })
+  
+  # --- Value Boxes ---
+  output$media_ingreso <- renderValueBox({
+    datos <- datos_filtrados()
+    promedio <- mean(datos$yoprcor, na.rm = TRUE)
+    
+    valueBox(
+      paste0("$", format(round(promedio, 0), big.mark=".", decimal.mark = ",")),
+      "Ingreso Promedio", 
+      icon = icon("money-bill"), 
+      color = "green"
+    )
+  })
+  
+  output$total_casos <- renderValueBox({
+    datos <- datos_filtrados()
+    valueBox(
+      format(nrow(datos), big.mark="."),
+      "Total Observaciones", 
+      icon = icon("users"), 
+      color = "blue"
+    )
+  })
+  
+  output$promedio_edad <- renderValueBox({
+    datos <- datos_filtrados()
+    if ("edad" %in% colnames(datos)) {
+      promedio_edad <- mean(datos$edad, na.rm = TRUE)
+    } else {
+      promedio_edad <- NA
+    }
+    
+    valueBox(
+      ifelse(is.na(promedio_edad), "N/A", round(promedio_edad, 1)),
+      "Edad Promedio", 
+      icon = icon("calendar"), 
+      color = "yellow"
+    )
+  })
+  
+  # --- Gráfico 1: Histograma ---
+  output$plot_ingresos <- renderPlot({
+    datos <- datos_filtrados()
+    
+    # Calcular límites para mejor visualización
+    max_ingreso <- min(2000000, max(datos$yoprcor, na.rm = TRUE))
+    
+    ggplot(datos, aes(x = yoprcor)) +
+      geom_histogram(fill = "steelblue", bins = 30, color = "white", alpha = 0.8) +
+      theme_minimal() +
+      labs(
+        x = "Ingreso ($)", 
+        y = "Frecuencia",
+        title = paste("Distribución de Ingresos - Año", input$filtro_anio)
+      ) +
+      scale_x_continuous(
+        labels = function(x) format(x, big.mark = ".", scientific = FALSE),
+        limits = c(0, max_ingreso)
+      ) +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5, face = "bold")
+      )
+  })
+  
+  # --- Gráfico 2: Boxplot comparativo por sexo ---
+  output$plot_boxplot <- renderPlot({
+    datos <- datos_filtrados()
+    
+    # Filtrar solo valores menores a 2,000,000 como indica el título
+    datos_filt <- datos %>% 
+      filter(yoprcor < 2000000, yoprcor > 0)
+    
+    # Convertir sexo a factor con etiquetas
+    datos_filt <- datos_filt %>%
+      mutate(
+        sexo_factor = factor(sexo, 
+                             levels = c(1, 2), 
+                             labels = c("Hombres", "Mujeres"))
+      )
+    
+    ggplot(datos_filt, aes(x = sexo_factor, y = yoprcor, fill = sexo_factor)) +
+      geom_boxplot(alpha = 0.7, outlier.shape = 16, outlier.alpha = 0.5) +
+      scale_fill_manual(values = c("Hombres" = "#3498db", "Mujeres" = "#e74c3c")) +
+      theme_minimal() +
+      labs(
+        x = "Sexo", 
+        y = "Ingreso ($)",
+        title = paste("Comparación de Ingresos por Sexo - Año", input$filtro_anio),
+        fill = "Sexo"
+      ) +
+      scale_y_continuous(
+        labels = function(x) format(x, big.mark = ".", scientific = FALSE)
+      ) +
+      theme(
+        legend.position = "none",
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        axis.text = element_text(size = 11)
+      ) +
+      coord_cartesian(ylim = c(0, 2000000))  # Zoom como se solicita
+  })
+  
+  # --- Gráfico 3: Barras con intervalos (para inferencia) ---
+  output$plot_barras_intervalos <- renderPlot({
+    datos <- datos_filtrados()
+    
+    # Calcular estadísticas por grupo
+    stats_grupo <- datos %>%
+      group_by(sexo) %>%
+      summarise(
+        media = mean(yoprcor, na.rm = TRUE),
+        sd = sd(yoprcor, na.rm = TRUE),
+        n = n(),
+        se = sd / sqrt(n),
+        .groups = 'drop'
+      ) %>%
+      mutate(
+        sexo_label = ifelse(sexo == 1, "Hombres", "Mujeres"),
+        ic_inf = media - 1.96 * se,
+        ic_sup = media + 1.96 * se
+      )
+    
+    ggplot(stats_grupo, aes(x = sexo_label, y = media, fill = sexo_label)) +
+      geom_bar(stat = "identity", alpha = 0.7) +
+      geom_errorbar(aes(ymin = ic_inf, ymax = ic_sup), 
+                    width = 0.2, 
+                    color = "black", 
+                    linewidth = 0.8) +
+      scale_fill_manual(values = c("Hombres" = "#3498db", "Mujeres" = "#e74c3c")) +
+      theme_minimal() +
+      labs(
+        x = "Sexo",
+        y = "Ingreso Promedio ($)",
+        title = paste("Ingreso Promedio con IC 95% - Año", input$filtro_anio),
+        fill = "Sexo"
+      ) +
+      scale_y_continuous(
+        labels = function(x) format(x, big.mark = ".", scientific = FALSE)
+      ) +
+      theme(
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        legend.position = "none"
+      )
+  })
+  
+  # --- Inferencia: test t ---
+  test_result <- reactive({
+    datos <- datos_filtrados()
+    # Asegurar que sexo sea factor
+    datos <- datos %>%
+      mutate(sexo_factor = factor(sexo, levels = c(1, 2)))
+    
+    t.test(yoprcor ~ sexo_factor, data = datos)
+  })
+  
+  output$resultado_ttest <- renderPrint({
+    test_result()
+  })
+  
+  output$interpretacion_ttest <- renderText({
+    res <- test_result()
+    p_val <- res$p.value
+    
+    if (p_val < 0.05) {
+      paste("El valor P es", round(p_val, 4),
+            "(< 0.05). Existe diferencia significativa entre los ingresos por sexo para el año", 
+            input$filtro_anio, ".")
+    } else {
+      paste("El valor P es", round(p_val, 4),
+            "(≥ 0.05). No existe evidencia suficiente para afirmar diferencia de ingresos para el año", 
+            input$filtro_anio, ".")
+    }
   })
 }
 
-addResourcePath(prefix = 'recursos', directoryPath = 'www')
 # -----------------------------------------------------------------------------
 # 4. Ejecución de la Aplicación
 # -----------------------------------------------------------------------------
